@@ -4,9 +4,10 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+
 import tennox.bacteriamod.BacteriaMod;
-import tennox.bacteriamod.util.TargetBlock;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
+import tennox.bacteriamod.util.TargetBlock;
 
 public class TileEntityBacteriaReplacer extends TileEntityBacteria {
 
@@ -24,8 +25,9 @@ public class TileEntityBacteriaReplacer extends TileEntityBacteria {
         if (worldObj.isBlockIndirectlyGettingPowered(i, j, k)) {
             Block above = worldObj.getBlock(i, j + 1, k);
             Block below = worldObj.getBlock(i, j - 1, k);
-            if (above == Blocks.air || above == BacteriaMod.replacer ||
-                below == Blocks.air || below == BacteriaMod.replacer) return;
+            if (above == Blocks.air || above == BacteriaMod.replacer
+                || below == Blocks.air
+                || below == BacteriaMod.replacer) return;
             if (above == below && worldObj.getBlockMetadata(i, j - 1, k) == worldObj.getBlockMetadata(i, j + 1, k))
                 return;
 

@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
+
 import tennox.bacteriamod.BacteriaMod;
 import tennox.bacteriamod.util.Config;
 
@@ -27,7 +28,8 @@ public class ItemBacteriaJammer extends Item {
             tick -= 1;
             if (tick == 0) {
                 BacteriaMod.jam_all = false;
-                ((EntityPlayer) entity).addChatMessage(new ChatComponentText("Jammed " + jammedBacteriaQuantity + " bacteria!"));
+                ((EntityPlayer) entity)
+                    .addChatMessage(new ChatComponentText("Jammed " + jammedBacteriaQuantity + " bacteria!"));
                 jammedBacteriaQuantity = 0L;
 
                 System.out.println(BacteriaMod.jamcolonies.size());

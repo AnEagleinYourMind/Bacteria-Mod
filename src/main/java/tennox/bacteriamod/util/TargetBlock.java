@@ -24,7 +24,11 @@ public class TargetBlock {
         return String.format("Food[id=%d, meta=%d]", Block.getIdFromBlock(block), meta);
     }
 
-    public Block getBlock() { return block; }
+    public Block getBlock() {
+        return block;
+    }
 
-    public int getMeta() { return meta; }
+    public int getMeta() {
+        return meta;
+    }
 }

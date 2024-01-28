@@ -8,12 +8,14 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+
 import tennox.bacteriamod.BacteriaMod;
+import tennox.bacteriamod.item.ItemBacteriaJammer;
 import tennox.bacteriamod.util.Config;
 import tennox.bacteriamod.util.TargetBlock;
-import tennox.bacteriamod.item.ItemBacteriaJammer;
 
 public class TileEntityBacteria extends TileEntity {
+
     private static final TargetBlock GRASS = new TargetBlock(Blocks.grass, 0);
     protected static Block block;
     static final Random rand = new Random();
@@ -73,12 +75,13 @@ public class TileEntityBacteria extends TileEntity {
         int upDirection = yCoord + 1;
 
         while (!worldObj.isAirBlock(xCoord, upDirection, zCoord)) {
-            TargetBlock wrappedTarget = new TargetBlock(worldObj.getBlock(xCoord, upDirection, zCoord),
+            TargetBlock wrappedTarget = new TargetBlock(
+                worldObj.getBlock(xCoord, upDirection, zCoord),
                 worldObj.getBlockMetadata(xCoord, upDirection, zCoord));
 
-                if (!Config.blacklist.contains(wrappedTarget)) targetBlocks.add(wrappedTarget);
+            if (!Config.blacklist.contains(wrappedTarget)) targetBlocks.add(wrappedTarget);
 
-                if (targetBlocks.contains(GRASS)) targetBlocks.add(new TargetBlock(Blocks.dirt, 0));
+            if (targetBlocks.contains(GRASS)) targetBlocks.add(new TargetBlock(Blocks.dirt, 0));
 
             upDirection++;
         }
@@ -160,10 +163,15 @@ public class TileEntityBacteria extends TileEntity {
         nbt.setInteger("numfood", targetBlocks.size());
 
         for (int j = 0; j < targetBlocks.size(); j++) {
-            int id = Block.getIdFromBlock(targetBlocks.get(j).getBlock());
+            int id = Block.getIdFromBlock(
+                targetBlocks.get(j)
+                    .getBlock());
 
             nbt.setInteger("food" + j, id);
-            nbt.setInteger("food_meta" + j, targetBlocks.get(j).getMeta());
+            nbt.setInteger(
+                "food_meta" + j,
+                targetBlocks.get(j)
+                    .getMeta());
         }
     }
 }

@@ -1,14 +1,9 @@
 package tennox.bacteriamod;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
@@ -21,7 +16,18 @@ import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+
 import org.apache.logging.log4j.Logger;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 import tennox.bacteriamod.block.BlockBacteria;
 import tennox.bacteriamod.block.BlockBacteriaJammer;
 import tennox.bacteriamod.block.BlockBacteriaReplace;
@@ -34,12 +40,9 @@ import tennox.bacteriamod.util.Config;
 import tennox.bacteriamod.util.TargetBlock;
 import tennox.bacteriamod.world.BacteriaWorldGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 @Mod(modid = "tennox_bacteria", name = "Bacteria", version = "2.3.3")
 public class BacteriaMod {
+
     public static final String MOD_ID = "tennox_bacteria";
     @Instance(MOD_ID)
     public static BacteriaMod instance;
@@ -77,7 +80,9 @@ public class BacteriaMod {
 
         Config.initializeConfig(new Configuration(event.getSuggestedConfigurationFile()));
 
-        bacteriaBunch = new Item().setUnlocalizedName("tennox_bacteriaitem").setTextureName(BacteriaMod.getDomain() + "bacteria_item").setCreativeTab(CreativeTabs.tabMisc);
+        bacteriaBunch = new Item().setUnlocalizedName("tennox_bacteriaitem")
+            .setTextureName(BacteriaMod.getDomain() + "bacteria_item")
+            .setCreativeTab(CreativeTabs.tabMisc);
         jammerItem = new ItemBacteriaJammer().setUnlocalizedName("tennox_jammeritem");
         bacteriaPotion = new ItemBacteriaPotion().setUnlocalizedName("tennox_bacteriapotion");
 
@@ -131,34 +136,64 @@ public class BacteriaMod {
 
         GameRegistry.addRecipe(
             new ItemStack(jammer, 1),
-                "+#+", "#*#", "+-+", '#', bacteria, '*',
-                Items.iron_ingot, '-', Blocks.redstone_torch, '+',
-                Blocks.cobblestone);
+            "+#+",
+            "#*#",
+            "+-+",
+            '#',
+            bacteria,
+            '*',
+            Items.iron_ingot,
+            '-',
+            Blocks.redstone_torch,
+            '+',
+            Blocks.cobblestone);
         GameRegistry.addRecipe(
             new ItemStack(jammerItem, 1),
-                " # ", "#*#", " - ", '#', bacteria, '*',
-                Items.iron_ingot, '-', Blocks.redstone_torch);
-        GameRegistry.addRecipe(
-            new ItemStack(bacteria, 1),
-                " # ", "#*#", " # ", '#', bacteriaBunch, '*',
-                Blocks.redstone_torch);
-        GameRegistry.addRecipe(
-            new ItemStack(replacer, 1),
-                " # ", "#*#", " # ", '#', bacteriaBunch, '*',
-                Items.coal);
+            " # ",
+            "#*#",
+            " - ",
+            '#',
+            bacteria,
+            '*',
+            Items.iron_ingot,
+            '-',
+            Blocks.redstone_torch);
+        GameRegistry
+            .addRecipe(new ItemStack(bacteria, 1), " # ", "#*#", " # ", '#', bacteriaBunch, '*', Blocks.redstone_torch);
+        GameRegistry.addRecipe(new ItemStack(replacer, 1), " # ", "#*#", " # ", '#', bacteriaBunch, '*', Items.coal);
         GameRegistry.addRecipe(
             new ItemStack(must, 1),
-                "+*+", " # ", '+', Items.bread, '#',
-                Items.water_bucket, '*', Blocks.sponge);
+            "+*+",
+            " # ",
+            '+',
+            Items.bread,
+            '#',
+            Items.water_bucket,
+            '*',
+            Blocks.sponge);
         GameRegistry.addRecipe(
             new ItemStack(Blocks.sponge, 2),
-                "+*+", "*+*", "+#+", '+', Blocks.wool, '#',
-                Items.water_bucket, '*', Blocks.yellow_flower);
+            "+*+",
+            "*+*",
+            "+#+",
+            '+',
+            Blocks.wool,
+            '#',
+            Items.water_bucket,
+            '*',
+            Blocks.yellow_flower);
 
         GameRegistry.addRecipe(
             new ItemStack(Blocks.sponge, 2),
-                "+*+", "*+*", "+#+", '+', Blocks.wool, '#',
-                Items.water_bucket, '*', Blocks.yellow_flower);
+            "+*+",
+            "*+*",
+            "+#+",
+            '+',
+            Blocks.wool,
+            '#',
+            Items.water_bucket,
+            '*',
+            Blocks.yellow_flower);
 
         GameRegistry
             .addShapelessRecipe(new ItemStack(bacteriaPotion, 1), Items.potionitem, Items.nether_wart, bacteriaBunch);
