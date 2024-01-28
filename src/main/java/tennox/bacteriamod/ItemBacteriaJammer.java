@@ -1,5 +1,6 @@
 package tennox.bacteriamod;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -7,21 +8,20 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
-public class ItemBacteriaJammer extends Item implements IItemWithName {
-
-	public static final String name = "jammeritem";
-
+public class ItemBacteriaJammer extends Item {
 	int tick;
 	static long num;
 
 	public ItemBacteriaJammer() {
-		GameRegistry.registerItem(this, name);
-		setUnlocalizedName(Bacteria.MODID + "-" + name);
-		
+		super();
 		maxStackSize = 64;
 		setCreativeTab(CreativeTabs.tabMisc);
+	}
+
+	@Override
+	public void registerIcons(IIconRegister iconRegister) {
+		itemIcon = iconRegister.registerIcon("tennox_bacteria:jammeritem");
 	}
 
 	@Override
@@ -42,14 +42,9 @@ public class ItemBacteriaJammer extends Item implements IItemWithName {
 			return item;
 		Bacteria.jam_all = true;
 		tick = 30;
-		
-		player.addStat(Bacteria.jamAchievement, 1);
+		if (Bacteria.achievements)
+			player.addStat(Bacteria.jamAchievement, 1);
 		player.addChatMessage(new ChatComponentText("Jamming bacteria..."));
 		return item;
-	}
-
-	@Override
-	public String getName() {
-		return name;
 	}
 }

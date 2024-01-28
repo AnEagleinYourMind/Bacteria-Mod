@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 
-public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListBox {
-
-	IBlockState bacteriaBlock;
+public class TileEntityBacteria extends TileEntity {
+	Block block;
 	ArrayList<Food> food;
 	Random rand = new Random();
 	int colony;
@@ -24,14 +21,14 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 	public TileEntityBacteria() {
 		if (food == null)
 			food = new ArrayList<Food>();
-		bacteriaBlock = Bacteria.bacteria.getDefaultState();
+		block = Bacteria.bacteria;
 		do
 			colony = rand.nextInt();
 		while (Bacteria.jamcolonies.contains(Integer.valueOf(colony)));
 	}
 
 	@Override
-	public void update() {
+	public void updateEntity() {
 		if (worldObj.isRemote)
 			return;
 		if (Bacteria.jamcolonies.contains(Integer.valueOf(colony)) || Bacteria.jam_all) {
@@ -41,7 +38,7 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 		}
 
 		if (food.size() == 0) {
-			if (worldObj.isBlockIndirectlyGettingPowered(this.getPos()) <= 0)
+			if (!worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord))
 				return;
 			selectFood();
 			if (food.size() == 0)
@@ -67,65 +64,70 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 	}
 
 	public void selectFood() {
-		IBlockState state;
-		BlockPos pos = this.getPos().up();
+		int i = xCoord; // xCoord, yCoord, zCoord
+		int j = yCoord + 1;
+		int k = zCoord;
 
-		while ((state = worldObj.getBlockState(pos)).getBlock() != Blocks.air) {
-			addFood(state);
-			pos = pos.up();
+		Block b;
+		while ((b = worldObj.getBlock(i, j, k)) != Blocks.air) {
+			addFood(b, worldObj.getBlockMetadata(i, j, k));
+			j++;
 		}
 	}
 
-	public void addFood(IBlockState state) {
-		if (isValidFood(state))
-			food.add(new Food(state));
+	public void addFood(Block block, int meta) {
+		if (isValidFood(block, meta))
+			food.add(new Food(block, meta));
 	}
 
-	public static boolean isValidFood(IBlockState state) {
-		if (state.getBlock() == Blocks.bedrock || state.getBlock() == Bacteria.bacteria)
+	public static boolean isValidFood(Block block, int meta) {
+		if (block == Blocks.bedrock || block == Bacteria.bacteria)
 			return false;
 		return true;
 	}
 
 	public void eatEverything() {
-		maybeEat(getPos().north());
-		maybeEat(getPos().south());
-		maybeEat(getPos().east());
-		maybeEat(getPos().west());
-		maybeEat(getPos().up());
-		maybeEat(getPos().down());
+		int i = xCoord;
+		int j = yCoord;
+		int k = zCoord;
+		maybeEat(i + 1, j, k);
+		maybeEat(i, j + 1, k);
+		maybeEat(i - 1, j, k);
+		maybeEat(i, j - 1, k);
+		maybeEat(i, j, k + 1);
+		maybeEat(i, j, k - 1);
 
 		die();
 	}
 
-	public void maybeEat(BlockPos pos) {
-		if (isAtBorder(pos))
+	public void maybeEat(int i, int j, int k) {
+		if (isAtBorder(i, j, k))
 			return;
-		if (isFood(worldObj.getBlockState(pos))) {
-			worldObj.setBlockState(pos, bacteriaBlock);
-			((TileEntityBacteria) worldObj.getTileEntity(pos)).food = food;
-			((TileEntityBacteria) worldObj.getTileEntity(pos)).colony = colony;
+		if (isFood(worldObj.getBlock(i, j, k), worldObj.getBlockMetadata(i, j, k))) {
+			worldObj.setBlock(i, j, k, block);
+			((TileEntityBacteria) worldObj.getTileEntity(i, j, k)).food = food;
+			((TileEntityBacteria) worldObj.getTileEntity(i, j, k)).colony = colony;
 		}
 	}
 
-	public boolean isAtBorder(BlockPos pos) { // Block
-		while (worldObj.getBlockState(pos) != Block.getBlockFromName(Bacteria.isolation)) {
-			if (pos.getY() >= worldObj.getActualHeight())
+	public boolean isAtBorder(int i, int j, int k) { // Block
+		while (worldObj.getBlock(i, j, k) != Block.getBlockFromName(Bacteria.isolation)) {
+			if (j >= worldObj.getActualHeight())
 				return false;
-			pos = pos.up(); // TODO: improve by reusing BlockPos instances (maybe MutableBlockPos?)
+			j++;
 		}
 		return true;
 	}
 
-	Food grassFood = new Food(Blocks.grass.getDefaultState());
-	Food dirtFood = new Food(Blocks.dirt.getDefaultState());
-	Food waterFood = new Food(Blocks.water.getDefaultState());
-	Food flowingWaterFood = new Food(Blocks.flowing_water.getDefaultState());
+	Food grass = new Food(Blocks.grass, 0);
+	Food dirt = new Food(Blocks.dirt, 0);
+	Food water = new Food(Blocks.water, 0);
+	Food flowing_water = new Food(Blocks.flowing_water, 0);
 
-	public boolean isFood(IBlockState state) {
+	public boolean isFood(Block block, int meta) {
 		if (Bacteria.jamcolonies.contains(Integer.valueOf(colony)))
 			return false;
-		if (state.getBlock() == Bacteria.jammer) {
+		if (block == Bacteria.jammer) {
 			Bacteria.jamcolonies.add(Integer.valueOf(colony));
 
 			jammed = true;
@@ -133,51 +135,44 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 		}
 
 		for (Food f : Bacteria.blacklist) {
-			if (isFood2(f, state))
+			if (isFood2(f, block, meta))
 				return false;
 		}
 
 		for (Food f : food) {
-			if (isFood2(f, state))
+			if (isFood2(f, block, meta))
 				return true;
 		}
 
+		if (block == Blocks.grass)
+			return food.contains(dirt);
+		if (block == Blocks.dirt)
+			return food.contains(grass);
+		if (block == Blocks.flowing_water || block == Blocks.water) {
+			for (Food f : food) {
+				if (f.block == Blocks.water || f.block == Blocks.flowing_water)
+					return true;
+			}
+		}
+		if (block == Blocks.flowing_lava || block == Blocks.lava) {
+			for (Food f : food) {
+				if (f.block == Blocks.lava || f.block == Blocks.flowing_lava)
+					return true;
+			}
+		}
 		return false;
 	}
 
-	/**
-	 * checks if the specified blockstate matches the specified food
-	 **/
-	private boolean isFood2(Food f, IBlockState state) { // TODO: check if BlockState comparison works correctly
-		// if (!state.getBlock().equals(f.block))
-		// return false;
-		// Item item = Item.getItemFromBlock(state.getBlock());
-		// if (item != null && !item.getHasSubtypes())
-		// return true;
-
-		if (state == f.state)
+	private boolean isFood2(Food f, Block block, int meta) {
+		if (!block.equals(f.block))
+			return false;
+		if (Item.getItemFromBlock(block) != null && !Item.getItemFromBlock(block).getHasSubtypes())
 			return true;
-
-		else if (state == Blocks.dirt.getDefaultState()) // dirt == grass
-			return f.state == Blocks.grass.getDefaultState();
-		else if (state == Blocks.grass.getDefaultState())
-			return f.state == Blocks.dirt.getDefaultState();
-
-		else if (state == Blocks.water.getDefaultState()) // water == flowing water
-			return f.state == Blocks.flowing_water.getDefaultState();
-		else if (state == Blocks.flowing_water.getDefaultState())
-			return f.state == Blocks.water.getDefaultState();
-
-		else if (state == Blocks.lava.getDefaultState()) // lava == flowing lava
-			return f.state == Blocks.flowing_lava.getDefaultState();
-		else if (state == Blocks.flowing_lava.getDefaultState())
-			return f.state == Blocks.lava.getDefaultState();
-
-		return false;
+		return meta == f.meta;
 	}
 
 	public void die() {
-		worldObj.setBlockToAir(getPos()); // x,y,z
+		worldObj.setBlockToAir(xCoord, yCoord, zCoord); // x,y,z
 		if (jammed)
 			ItemBacteriaJammer.num += 1L;
 	}
@@ -194,8 +189,7 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 		for (int j = 0; j < i; j++) {
 			int id = nbt.getInteger("food" + j);
 			int meta = nbt.getInteger("food_meta" + j + "");
-			Block b = Block.getBlockById(id);
-			food.add(new Food(b.getStateFromMeta(meta)));
+			food.add(new Food(Block.getBlockById(id), meta));
 		}
 	}
 
@@ -207,30 +201,31 @@ public class TileEntityBacteria extends TileEntity implements IUpdatePlayerListB
 		nbt.setInteger("numfood", food.size());
 
 		for (int j = 0; j < food.size(); j++) {
-			IBlockState bs = food.get(j).state;
-			int id = Block.getIdFromBlock(bs.getBlock());
+			int id = Block.getIdFromBlock(food.get(j).block);
 
 			nbt.setInteger("food" + j, id);
-			nbt.setInteger("food_meta" + j, bs.getBlock().getMetaFromState(bs));
+			nbt.setInteger("food_meta" + j, food.get(j).meta);
 		}
 	}
 }
 
 class Food {
-	IBlockState state;
+	Block block;
+	int meta;
 
-	public Food(IBlockState state) {
-		this.state = state;
+	public Food(Block block, int meta) {
+		this.block = block;
+		this.meta = meta;
 	}
 
 	public boolean equals(Object o) {
 		if (!(o instanceof Food))
 			return false;
 		Food f = (Food) o;
-		return this.state == f.state; // TODO: check if state comparison works
+		return block.equals(f.block) && meta == f.meta;
 	}
 
 	public String toString() {
-		return String.format("Food[%s]", state);
+		return String.format("Food[id=%d, meta=%d]", Block.getIdFromBlock(block), meta);
 	}
 }
