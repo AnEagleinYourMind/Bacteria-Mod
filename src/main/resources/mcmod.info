@@ -1,7 +1,7 @@
 [
 {
-  "modid": "tennox_bacteria",
-  "name": "Bacteria Mod",
+  "modid": "${modId}",
+  "name": "${modName}",
   "description": "Epic destruction",
   "version": "${modVersion}",
   "mcversion": "${minecraftVersion}",

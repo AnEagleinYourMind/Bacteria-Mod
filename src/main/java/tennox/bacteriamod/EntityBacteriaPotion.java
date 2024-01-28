@@ -11,39 +11,43 @@ import net.minecraft.world.World;
 
 class EntityBacteriaPotion extends EntityPotion {
 
-	public EntityBacteriaPotion(World world) {
-		super(world);
-	}
+    public EntityBacteriaPotion(World world) {
+        super(world);
+    }
 
-	public EntityBacteriaPotion(World world, EntityPlayer player, ItemStack itemstack) {
-		super(world, player, itemstack);
-	}
+    public EntityBacteriaPotion(World world, EntityPlayer player, ItemStack itemstack) {
+        super(world, player, itemstack);
+    }
 
-	@Override
-	protected void onImpact(MovingObjectPosition pos) {
-		if (pos.typeOfHit == MovingObjectType.BLOCK) { // RenderPotion
-			Block block = worldObj.getBlock(pos.blockX, pos.blockY, pos.blockZ);
-			int meta = worldObj.getBlockMetadata(pos.blockX, pos.blockY, pos.blockZ);
+    @Override
+    protected void onImpact(MovingObjectPosition pos) {
+        if (pos.typeOfHit == MovingObjectType.BLOCK) { // RenderPotion
+            Block block = worldObj.getBlock(pos.blockX, pos.blockY, pos.blockZ);
+            int meta = worldObj.getBlockMetadata(pos.blockX, pos.blockY, pos.blockZ);
 
-			if (TileEntityBacteria.isValidFood(block, meta)) {
-				worldObj.setBlock(pos.blockX, pos.blockY, pos.blockZ, Bacteria.bacteria, 0, 3);
-				TileEntity t = worldObj.getTileEntity(pos.blockX, pos.blockY, pos.blockZ);
+            if (TileEntityBacteria.isValidFood(block, meta)) {
+                worldObj.setBlock(pos.blockX, pos.blockY, pos.blockZ, Bacteria.bacteria, 0, 3);
+                TileEntity t = worldObj.getTileEntity(pos.blockX, pos.blockY, pos.blockZ);
 
-				if (t != null && t instanceof TileEntityBacteria) {
-					TileEntityBacteria tile = (TileEntityBacteria) t;
-					tile.addFood(block, meta);
-					if (tile.shouldStartInstantly())
-						tile.startInstantly = true;
-				}
-			}
+                if (t != null && t instanceof TileEntityBacteria) {
+                    TileEntityBacteria tile = (TileEntityBacteria) t;
+                    tile.addFood(block, meta);
+                    if (tile.shouldStartInstantly()) tile.startInstantly = true;
+                }
+            }
 
-			this.worldObj.playAuxSFX(2002, (int) Math.round(this.posX), (int) Math.round(this.posY), (int) Math.round(this.posZ), this.getPotionDamage());
-			this.setDead();
-		}
-	}
+            this.worldObj.playAuxSFX(
+                2002,
+                (int) Math.round(this.posX),
+                (int) Math.round(this.posY),
+                (int) Math.round(this.posZ),
+                this.getPotionDamage());
+            this.setDead();
+        }
+    }
 
-	@Override
-	public int getPotionDamage() { // 6,8,12
-		return 12;
-	}
+    @Override
+    public int getPotionDamage() { // 6,8,12
+        return 12;
+    }
 }

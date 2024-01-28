@@ -10,21 +10,22 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class BlockBacteria extends BlockContainer {
-	ArrayList<Integer> food = new ArrayList<Integer>();
 
-	protected BlockBacteria() {
-		super(Material.rock);
-		setCreativeTab(CreativeTabs.tabMisc);
-		setHardness(0.07F);
-	}
+    ArrayList<Integer> food = new ArrayList<Integer>();
 
-	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
-		blockIcon = par1IconRegister.registerIcon("tennox_bacteria:normal");
-	}
+    protected BlockBacteria() {
+        super(Material.rock);
+        setCreativeTab(CreativeTabs.tabMisc);
+        setHardness(0.07F);
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World w, int i) {
-		return new TileEntityBacteria();
-	}
+    @Override
+    public void registerBlockIcons(IIconRegister par1IconRegister) {
+        blockIcon = par1IconRegister.registerIcon("tennox_bacteria:normal");
+    }
+
+    @Override
+    public TileEntity createNewTileEntity(World w, int i) {
+        return new TileEntityBacteria();
+    }
 }

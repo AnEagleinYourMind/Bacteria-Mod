@@ -8,19 +8,20 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class BlockBacteriaReplace extends BlockContainer {
-	protected BlockBacteriaReplace() {
-		super(Material.rock);
-		setCreativeTab(CreativeTabs.tabMisc);
-		setHardness(0.07F);
-	}
 
-	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
-		blockIcon = par1IconRegister.registerIcon("tennox_bacteria:replacer");
-	}
+    protected BlockBacteriaReplace() {
+        super(Material.rock);
+        setCreativeTab(CreativeTabs.tabMisc);
+        setHardness(0.07F);
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World w, int i) {
-		return new TileEntityBacteriaReplacer();
-	}
+    @Override
+    public void registerBlockIcons(IIconRegister par1IconRegister) {
+        blockIcon = par1IconRegister.registerIcon("tennox_bacteria:replacer");
+    }
+
+    @Override
+    public TileEntity createNewTileEntity(World w, int i) {
+        return new TileEntityBacteriaReplacer();
+    }
 }
