@@ -1,6 +1,5 @@
 package tennox.bacteriamod.item;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,11 +17,7 @@ public class ItemBacteriaJammer extends Item {
     public ItemBacteriaJammer() {
         maxStackSize = 1;
         setCreativeTab(CreativeTabs.tabMisc);
-    }
-
-    @Override
-    public void registerIcons(IIconRegister iconRegister) {
-        itemIcon = iconRegister.registerIcon("tennox_bacteria:jammeritem");
+        setTextureName(BacteriaMod.getDomain() + "jammer_item");
     }
 
     @Override

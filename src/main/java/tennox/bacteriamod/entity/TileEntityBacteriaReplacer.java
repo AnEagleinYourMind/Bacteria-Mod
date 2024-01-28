@@ -5,7 +5,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import tennox.bacteriamod.BacteriaMod;
-import tennox.bacteriamod.Food;
+import tennox.bacteriamod.util.Food;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 
 public class TileEntityBacteriaReplacer extends TileEntityBacteria {

@@ -1,11 +1,11 @@
 package tennox.bacteriamod.item;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import tennox.bacteriamod.BacteriaMod;
 import tennox.bacteriamod.entity.EntityBacteriaPotion;
 
 public class ItemBacteriaPotion extends Item {
@@ -14,11 +14,7 @@ public class ItemBacteriaPotion extends Item {
     public ItemBacteriaPotion() {
         setMaxStackSize(1);
         setCreativeTab(CreativeTabs.tabMisc);
-    }
-
-    @Override
-    public void registerIcons(IIconRegister register) {
-        itemIcon = register.registerIcon("tennox_bacteria:bacteriapotion");
+        setTextureName(BacteriaMod.getDomain() + "bacteria_potion");
     }
 
     @Override // EntityPotion

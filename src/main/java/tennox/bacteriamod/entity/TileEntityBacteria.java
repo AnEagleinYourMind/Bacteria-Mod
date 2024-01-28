@@ -9,7 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import tennox.bacteriamod.BacteriaMod;
-import tennox.bacteriamod.Food;
+import tennox.bacteriamod.util.Food;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 
 public class TileEntityBacteria extends TileEntity {

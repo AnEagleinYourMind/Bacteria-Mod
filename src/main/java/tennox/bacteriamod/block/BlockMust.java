@@ -22,11 +22,7 @@ public class BlockMust extends Block {
         setHardness(0.6F);
         setTickRandomly(true);
         setStepSound(Block.soundTypeGrass);
-    }
-
-    @Override // TODO: replace with setBlockTextureName?
-    public void registerBlockIcons(IIconRegister par1IconRegister) {
-        blockIcon = par1IconRegister.registerIcon("tennox_bacteria:must");
+        setBlockTextureName(BacteriaMod.getDomain() + "must");
     }
 
     @Override

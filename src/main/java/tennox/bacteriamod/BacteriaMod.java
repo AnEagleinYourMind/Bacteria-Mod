@@ -29,6 +29,7 @@ import tennox.bacteriamod.entity.TileEntityBacteriaReplacer;
 import tennox.bacteriamod.item.ItemBacteria;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 import tennox.bacteriamod.item.ItemBacteriaPotion;
+import tennox.bacteriamod.util.Food;
 import tennox.bacteriamod.world.BacteriaWorldGenerator;
 
 import java.util.ArrayList;

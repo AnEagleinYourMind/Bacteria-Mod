@@ -1,8 +1,8 @@
 package tennox.bacteriamod.item;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
+import tennox.bacteriamod.BacteriaMod;
 
 public class ItemBacteria extends Item {
 
@@ -10,10 +10,7 @@ public class ItemBacteria extends Item {
         super();
         maxStackSize = 64;
         setCreativeTab(CreativeTabs.tabMisc);
+        setTextureName(BacteriaMod.getDomain() + "bacteria_item");
     }
 
-    @Override
-    public void registerIcons(IIconRegister iconRegister) {
-        itemIcon = iconRegister.registerIcon("tennox_bacteria:bacteriaitem");
-    }
 }

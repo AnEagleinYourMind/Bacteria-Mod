@@ -1,4 +1,4 @@
-package tennox.bacteriamod;
+package tennox.bacteriamod.util;
 
 import net.minecraft.block.Block;
 
