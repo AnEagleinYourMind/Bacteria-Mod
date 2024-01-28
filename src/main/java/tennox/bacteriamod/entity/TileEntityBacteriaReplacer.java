@@ -57,7 +57,7 @@ public class TileEntityBacteriaReplacer extends TileEntityBacteria {
     public void die() {
         if (replace != null) worldObj.setBlock(xCoord, yCoord, zCoord, replace.getBlock(), replace.getMeta(), 3);
         else worldObj.setBlockToAir(xCoord, yCoord, zCoord);
-        if (jammed) ItemBacteriaJammer.num += 1L;
+        if (jammed) ItemBacteriaJammer.jammedBacteriaQuantity += 1L;
     }
 
     @Override

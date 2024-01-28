@@ -152,7 +152,7 @@ public class TileEntityBacteria extends TileEntity {
 
     public void die() {
         worldObj.setBlockToAir(xCoord, yCoord, zCoord); // x,y,z
-        if (jammed) ++ItemBacteriaJammer.num;
+        if (jammed) ++ItemBacteriaJammer.jammedBacteriaQuantity;
     }
 
     @Override

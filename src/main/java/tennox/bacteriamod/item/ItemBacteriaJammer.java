@@ -12,7 +12,7 @@ import tennox.bacteriamod.BacteriaMod;
 public class ItemBacteriaJammer extends Item {
 
     private int tick;
-    public static long num; // TODO: what is num?!?
+    public static long jammedBacteriaQuantity;
 
     public ItemBacteriaJammer() {
         maxStackSize = 1;
@@ -26,19 +26,20 @@ public class ItemBacteriaJammer extends Item {
             tick -= 1;
             if (tick == 0) {
                 BacteriaMod.jam_all = false;
-                ((EntityPlayer) entity).addChatMessage(new ChatComponentText("Jammed " + num + " bacteria!"));
-                num = 0L;
+                ((EntityPlayer) entity).addChatMessage(new ChatComponentText("Jammed " + jammedBacteriaQuantity + " bacteria!"));
+                jammedBacteriaQuantity = 0L;
             }
         }
     }
 
     @Override
     public ItemStack onItemRightClick(ItemStack item, World world, EntityPlayer player) {
-        if (world.isRemote) return item;
-        BacteriaMod.jam_all = true;
-        tick = 30;
-        if (BacteriaMod.achievements) player.addStat(BacteriaMod.jamAchievement, 1);
-        player.addChatMessage(new ChatComponentText("Jamming bacteria..."));
+        if (!world.isRemote) {
+            BacteriaMod.jam_all = true;
+            tick = 30;
+            if (BacteriaMod.achievements) player.addStat(BacteriaMod.jamAchievement, 1);
+            player.addChatMessage(new ChatComponentText("Jamming bacteria..."));
+        }
         return item;
     }
 }
