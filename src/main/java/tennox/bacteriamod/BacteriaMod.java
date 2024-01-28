@@ -10,12 +10,14 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.Achievement;
 import net.minecraft.stats.AchievementList;
+import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -26,17 +28,16 @@ import tennox.bacteriamod.block.BlockBacteriaReplace;
 import tennox.bacteriamod.block.BlockMust;
 import tennox.bacteriamod.entity.TileEntityBacteria;
 import tennox.bacteriamod.entity.TileEntityBacteriaReplacer;
-import tennox.bacteriamod.item.ItemBacteria;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 import tennox.bacteriamod.item.ItemBacteriaPotion;
 import tennox.bacteriamod.util.Food;
 import tennox.bacteriamod.world.BacteriaWorldGenerator;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Mod(modid = "tennox_bacteria", name = "Bacteria", version = "2.3.3")
 public class BacteriaMod {
-    // TODO: fix BlockBacteriaJammer
     public static final String MOD_ID = "tennox_bacteria";
     @Instance(MOD_ID)
     public static BacteriaMod instance;
@@ -110,7 +111,7 @@ public class BacteriaMod {
             }
         }
 
-        bacteriaBunch = new ItemBacteria().setUnlocalizedName("tennox_bacteriaitem");
+        bacteriaBunch = new Item().setUnlocalizedName("tennox_bacteriaitem").setTextureName(BacteriaMod.getDomain() + "bacteria_item").setCreativeTab(CreativeTabs.tabMisc);
         jammerItem = new ItemBacteriaJammer().setUnlocalizedName("tennox_jammeritem");
         bacteriaPotion = new ItemBacteriaPotion().setUnlocalizedName("tennox_bacteriapotion");
 
@@ -166,27 +167,33 @@ public class BacteriaMod {
         GameRegistry
             .addShapelessRecipe(new ItemStack(bacteriaPotion, 1), Items.potionitem, Items.nether_wart, bacteriaBunch);
 
-        if (achievements) { // Achievements
-            mustAchievement = new Achievement("bacteriamod.must", "must", 5, -2, must, AchievementList.buildWorkBench)
-                .registerStat();
+        if (achievements) {
+            AchievementPage achievementPage = new AchievementPage(MOD_ID);
+            AchievementPage.registerAchievementPage(achievementPage);
+            List<Achievement> achievementsList = achievementPage.getAchievements();
+
+            mustAchievement = new Achievement("bacteriamod.must", "must", 0, 2, must, AchievementList.buildWorkBench);
             bacteriaAchievement = new Achievement(
                 "bacteriamod.bacteria",
                 "bacteria",
-                5,
-                -3,
+                1,
+                1,
                 bacteriaBunch,
-                mustAchievement).registerStat();
+                mustAchievement);
             bacteriumAchievement = new Achievement(
                 "bacteriamod.bacterium",
                 "bacterium",
-                5,
-                -4,
+                2,
+                0,
                 bacteria,
-                bacteriaAchievement).setSpecial()
-                    .registerStat();
-            jamAchievement = new Achievement("bacteriamod.jammer", "jammer", 5, -5, jammerItem, bacteriumAchievement)
-                .setSpecial()
-                .registerStat();
+                bacteriaAchievement).setSpecial();
+            jamAchievement = new Achievement("bacteriamod.jammer", "jammer", 3, -1, jammerItem, bacteriumAchievement)
+                .setSpecial();
+
+            achievementsList.add(mustAchievement.registerStat());
+            achievementsList.add(bacteriaAchievement.registerStat());
+            achievementsList.add(bacteriumAchievement.registerStat());
+            achievementsList.add(jamAchievement.registerStat());
         }
         GameRegistry.registerTileEntity(TileEntityBacteria.class, "bacteria_tileentity");
         GameRegistry.registerTileEntity(TileEntityBacteriaReplacer.class, "replacer_tileentity");
