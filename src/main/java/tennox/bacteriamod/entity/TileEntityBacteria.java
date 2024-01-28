@@ -2,117 +2,126 @@ package tennox.bacteriamod.entity;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import tennox.bacteriamod.BacteriaMod;
-import tennox.bacteriamod.util.Food;
+import tennox.bacteriamod.util.Config;
+import tennox.bacteriamod.util.TargetBlock;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 
 public class TileEntityBacteria extends TileEntity {
-
-    Block block;
-    ArrayList<Food> food;
-    Random rand = new Random();
-    int colony;
-    boolean jammed;
+    private static final TargetBlock GRASS = new TargetBlock(Blocks.grass, 0);
+    protected static Block block;
+    static final Random rand = new Random();
+    ArrayList<TargetBlock> targetBlocks; // TODO: could this be a set?
+    UUID colony;
     int tick = 0;
+    boolean jammed;
     boolean startInstantly;
 
-    public TileEntityBacteria() {
-        if (food == null) food = new ArrayList<>();
-        block = BacteriaMod.bacteria;
-        do colony = rand.nextInt(); while (BacteriaMod.jamcolonies.contains(colony));
+    public TileEntityBacteria(Block represented) {
+        block = represented;
+        targetBlocks = new ArrayList<>();
+        colony = UUID.randomUUID(); // TODO: figure out how to make this run on the server only?
     }
 
     @Override
     public void updateEntity() {
-        if (worldObj.isRemote) return;
-        if (BacteriaMod.jamcolonies.contains(colony) || BacteriaMod.jam_all) {
-            jammed = true;
-            die();
-            return;
-        }
-
-        if (food.isEmpty()) {
-            if (!worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord)) return;
-            selectFood();
-            if (food.isEmpty()) return;
-            if (shouldStartInstantly()) startInstantly = true;
-        }
-        if (!startInstantly) {
-            if (BacteriaMod.randomize) tick = rand.nextInt(BacteriaMod.speed + 1);
-            if (tick < BacteriaMod.speed) {
-                tick += 1;
+        if (!worldObj.isRemote) {
+            if (BacteriaMod.jamcolonies.contains(colony)) {
+                // eventually you will want to remove the colony UUID from the list to prevent a memory leak buuuuuut
+                // it isn't that serious and for now I will just leave this crappy looking redundant conditional thing
+                jammed = true;
+                die();
                 return;
             }
-            tick = 0;
-        }
 
-        eatEverything();
+            if (BacteriaMod.jam_all) {
+                jammed = true;
+                die();
+                return;
+            }
+
+            if (targetBlocks.isEmpty()) {
+                if (!worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord)) return;
+                initializeTargetList();
+                if (targetBlocks.isEmpty()) return;
+                if (shouldStartInstantly()) startInstantly = true;
+            }
+            if (!startInstantly) {
+                if (Config.randomSpreadSpeedEnabled) tick = rand.nextInt(Config.spreadSpeed + 1);
+                if (tick < Config.spreadSpeed) {
+                    ++tick;
+                    return;
+                }
+                tick = 0;
+            }
+
+            tryConsumeAdjacentBlocks();
+        }
     }
 
     public boolean shouldStartInstantly() {
         return true;
     }
 
-    public void selectFood() {
+    public void initializeTargetList() {
         int upDirection = yCoord + 1;
 
-        Block b;
-        while ((b = worldObj.getBlock(xCoord, upDirection, zCoord)) != Blocks.air) {
-            addFood(b, worldObj.getBlockMetadata(xCoord, upDirection, zCoord));
+        while (!worldObj.isAirBlock(xCoord, upDirection, zCoord)) {
+            TargetBlock wrappedTarget = new TargetBlock(worldObj.getBlock(xCoord, upDirection, zCoord),
+                worldObj.getBlockMetadata(xCoord, upDirection, zCoord));
+
+                if (!Config.blacklist.contains(wrappedTarget)) targetBlocks.add(wrappedTarget);
+
+                if (targetBlocks.contains(GRASS)) targetBlocks.add(new TargetBlock(Blocks.dirt, 0));
+
             upDirection++;
         }
     }
 
-    public void addFood(Block block, int meta) {
-        if (isValidFood(block, meta)) food.add(new Food(block, meta));
+    public void addTargetBlock(TargetBlock target) {
+        targetBlocks.add(target);
     }
 
-    public static boolean isValidFood(Block block, int meta) {
-        return block != Blocks.bedrock && block != BacteriaMod.bacteria;
-    }
-
-    public void eatEverything() {
+    public void tryConsumeAdjacentBlocks() {
         int i = xCoord;
         int j = yCoord;
         int k = zCoord;
-        maybeEat(i + 1, j, k);
-        maybeEat(i, j + 1, k);
-        maybeEat(i - 1, j, k);
-        maybeEat(i, j - 1, k);
-        maybeEat(i, j, k + 1);
-        maybeEat(i, j, k - 1);
+        tryConsumeBlock(i + 1, j, k);
+        tryConsumeBlock(i, j + 1, k);
+        tryConsumeBlock(i - 1, j, k);
+        tryConsumeBlock(i, j - 1, k);
+        tryConsumeBlock(i, j, k + 1);
+        tryConsumeBlock(i, j, k - 1);
 
         die();
     }
 
-    public void maybeEat(int i, int j, int k) {
+    public void tryConsumeBlock(int i, int j, int k) {
         if (isAtBorder(i, j, k)) return;
-        if (isFood(worldObj.getBlock(i, j, k), worldObj.getBlockMetadata(i, j, k))) {
+
+        TargetBlock targetBlock = new TargetBlock(worldObj.getBlock(i, j, k), worldObj.getBlockMetadata(i, j, k));
+        if (isFood(targetBlock)) {
             worldObj.setBlock(i, j, k, block);
-            ((TileEntityBacteria) worldObj.getTileEntity(i, j, k)).food = food;
+            ((TileEntityBacteria) worldObj.getTileEntity(i, j, k)).targetBlocks = targetBlocks;
             ((TileEntityBacteria) worldObj.getTileEntity(i, j, k)).colony = colony;
         }
     }
 
-    public boolean isAtBorder(int i, int j, int k) { // Block
-        while (worldObj.getBlock(i, j, k) != Block.getBlockFromName(BacteriaMod.isolation)) {
+    public boolean isAtBorder(int i, int j, int k) {
+        while (worldObj.getBlock(i, j, k) != Config.isolatorBlock) {
             if (j >= worldObj.getActualHeight()) return false;
-            j++;
+            ++j;
         }
         return true;
     }
 
-    Food grass = new Food(Blocks.grass, 0);
-    Food dirt = new Food(Blocks.dirt, 0);
-
-    public boolean isFood(Block block, int meta) {
-        if (BacteriaMod.jamcolonies.contains(colony)) return false;
+    public boolean isFood(TargetBlock target) {
         if (block == BacteriaMod.jammer) {
             BacteriaMod.jamcolonies.add(colony);
 
@@ -120,53 +129,26 @@ public class TileEntityBacteria extends TileEntity {
             return false;
         }
 
-        for (Food f : BacteriaMod.blacklist) {
-            if (isFood2(f, block, meta)) return false;
-        }
-
-        for (Food f : food) {
-            if (isFood2(f, block, meta)) return true;
-        }
-
-        if (block == Blocks.grass) return food.contains(dirt);
-        if (block == Blocks.dirt) return food.contains(grass);
-        if (block == Blocks.flowing_water || block == Blocks.water) {
-            for (Food f : food) {
-                if (f.getBlock() == Blocks.water || f.getBlock() == Blocks.flowing_water) return true;
-            }
-        }
-        if (block == Blocks.flowing_lava || block == Blocks.lava) {
-            for (Food f : food) {
-                if (f.getBlock() == Blocks.lava || f.getBlock() == Blocks.flowing_lava) return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isFood2(Food f, Block block, int meta) {
-        if (!block.equals(f.getBlock())) return false;
-        if (Item.getItemFromBlock(block) != null && !Item.getItemFromBlock(block)
-            .getHasSubtypes()) return true;
-        return meta == f.getMeta();
+        return targetBlocks.contains(target);
     }
 
     public void die() {
-        worldObj.setBlockToAir(xCoord, yCoord, zCoord); // x,y,z
+        worldObj.setBlockToAir(xCoord, yCoord, zCoord);
         if (jammed) ++ItemBacteriaJammer.jammedBacteriaQuantity;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
-        if (food == null) food = new ArrayList<>();
+        if (targetBlocks == null) targetBlocks = new ArrayList<>();
 
-        colony = nbt.getInteger("colony");
+        colony = UUID.fromString(nbt.getString("colony"));
         int i = nbt.getInteger("numfood");
 
         for (int j = 0; j < i; j++) {
             int id = nbt.getInteger("food" + j);
             int meta = nbt.getInteger("food_meta" + j);
-            food.add(new Food(Block.getBlockById(id), meta));
+            targetBlocks.add(new TargetBlock(Block.getBlockById(id), meta));
         }
     }
 
@@ -174,14 +156,14 @@ public class TileEntityBacteria extends TileEntity {
     public void writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
 
-        nbt.setInteger("colony", colony);
-        nbt.setInteger("numfood", food.size());
+        nbt.setString("colony", colony.toString());
+        nbt.setInteger("numfood", targetBlocks.size());
 
-        for (int j = 0; j < food.size(); j++) {
-            int id = Block.getIdFromBlock(food.get(j).getBlock());
+        for (int j = 0; j < targetBlocks.size(); j++) {
+            int id = Block.getIdFromBlock(targetBlocks.get(j).getBlock());
 
             nbt.setInteger("food" + j, id);
-            nbt.setInteger("food_meta" + j, food.get(j).getMeta());
+            nbt.setInteger("food_meta" + j, targetBlocks.get(j).getMeta());
         }
     }
 }

@@ -19,6 +19,6 @@ public class BlockBacteria extends BlockContainer {
 
     @Override
     public TileEntity createNewTileEntity(World w, int i) {
-        return new TileEntityBacteria();
+        return new TileEntityBacteria(this);
     }
 }

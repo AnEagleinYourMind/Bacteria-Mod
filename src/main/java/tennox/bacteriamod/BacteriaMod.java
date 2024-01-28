@@ -30,25 +30,21 @@ import tennox.bacteriamod.entity.TileEntityBacteria;
 import tennox.bacteriamod.entity.TileEntityBacteriaReplacer;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 import tennox.bacteriamod.item.ItemBacteriaPotion;
-import tennox.bacteriamod.util.Food;
+import tennox.bacteriamod.util.Config;
+import tennox.bacteriamod.util.TargetBlock;
 import tennox.bacteriamod.world.BacteriaWorldGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Mod(modid = "tennox_bacteria", name = "Bacteria", version = "2.3.3")
 public class BacteriaMod {
     public static final String MOD_ID = "tennox_bacteria";
     @Instance(MOD_ID)
     public static BacteriaMod instance;
-    public static boolean achievements = false;
-
     public static Logger logger;
     public static BacteriaWorldGenerator worldGen = new BacteriaWorldGenerator();
-    public static boolean randomize;
-    public static String isolation;
-    public static ArrayList<Food> blacklist;
-    public static int speed;
     public static Item bacteriaBunch;
     public static Item jammerItem;
     public static Item bacteriaPotion;
@@ -60,8 +56,15 @@ public class BacteriaMod {
     public static Achievement bacteriaAchievement;
     public static Achievement bacteriumAchievement;
     public static Achievement jamAchievement;
-    public static ArrayList<Integer> jamcolonies = new ArrayList<>();
+    public static ArrayList<UUID> jamcolonies = new ArrayList<>();
     public static boolean jam_all;
+
+    // TODO: one could add a Colony object, that is shared between all bacteria TEs belonging to the colony.
+    // This colony class would contain its UUID, and the target blocks to be destroyed or replaced
+    // It would also make a HashSet more feasable for better target lookup time
+    // However, this would need to be saved to disk somehow
+
+    // TODO: add replacer blacklist
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -72,44 +75,7 @@ public class BacteriaMod {
 
         logger = event.getModLog();
 
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        config.load();
-        achievements = config.get("General", "Enable achievements", true)
-            .getBoolean(true);
-
-        isolation = config.get("General", "isolation block", "brick_block")
-            .getString();
-        speed = config.get("General", "bacteria speed", 50)
-            .getInt();
-        randomize = config.get("General", "randomize bacteria spread", true)
-            .getBoolean(true);
-        String blacklist1 = config.get("General", "blacklist", "")
-            .getString();
-        config.save();
-
-        blacklist = new ArrayList<>();
-        if (!blacklist1.isEmpty()) {
-            for (String s : blacklist1.split(",")) {
-                try {
-                    int meta = 0;
-                    if (s.contains(":")) {
-                        String[] s2 = s.split(":");
-                        s = s2[0];
-                        meta = Integer.parseInt(s2[1]);
-                    }
-
-                    int id = Integer.parseInt(s);
-                    Block block = Block.getBlockById(id);
-                    if (block == Blocks.air) {
-                        logger.error("Error while parsing blacklist: ID " + id + " is not a valid block!");
-                    } else {
-                        blacklist.add(new Food(block, meta));
-                    }
-                } catch (NumberFormatException e) {
-                    logger.error("Error while parsing blacklist: '" + s + "' is not a valid number!");
-                }
-            }
-        }
+        Config.initializeConfig(new Configuration(event.getSuggestedConfigurationFile()));
 
         bacteriaBunch = new Item().setUnlocalizedName("tennox_bacteriaitem").setTextureName(BacteriaMod.getDomain() + "bacteria_item").setCreativeTab(CreativeTabs.tabMisc);
         jammerItem = new ItemBacteriaJammer().setUnlocalizedName("tennox_jammeritem");
@@ -132,6 +98,36 @@ public class BacteriaMod {
     @EventHandler
     public void load(FMLInitializationEvent event) {
         instance = this;
+
+        // parse config after PreInitialization when all blocks should be loaded
+        if (!Config.unparsedBlacklist.isEmpty()) {
+            for (String s : Config.unparsedBlacklist.split(",")) {
+                try {
+                    int meta = 0;
+                    if (s.contains(":")) {
+                        String[] s2 = s.split(":");
+                        s = s2[0];
+                        meta = Integer.parseInt(s2[1]);
+                    }
+
+                    int id = Integer.parseInt(s);
+                    Block block = Block.getBlockById(id);
+                    if (block == Blocks.air) {
+                        logger.warn("Error while parsing blacklist: ID " + id + " is not a valid block!");
+                        continue;
+                    }
+
+                    Config.blacklist.add(new TargetBlock(block, meta));
+
+                } catch (NumberFormatException e) {
+                    logger.warn("Error while parsing blacklist: '" + s + "' is not a valid number!");
+                }
+            }
+        }
+
+        // force blacklist bedrock for obvious reasons
+        Config.blacklist.add(new TargetBlock(Blocks.bedrock, 0));
+        Config.blacklist.add(new TargetBlock(bacteria, 0));
 
         GameRegistry.addRecipe(
             new ItemStack(jammer, 1),
@@ -167,7 +163,7 @@ public class BacteriaMod {
         GameRegistry
             .addShapelessRecipe(new ItemStack(bacteriaPotion, 1), Items.potionitem, Items.nether_wart, bacteriaBunch);
 
-        if (achievements) {
+        if (Config.achievementsEnabled) {
             AchievementPage achievementPage = new AchievementPage(MOD_ID);
             AchievementPage.registerAchievementPage(achievementPage);
             List<Achievement> achievementsList = achievementPage.getAchievements();
@@ -202,13 +198,13 @@ public class BacteriaMod {
 
     @SubscribeEvent
     public void onPickup(EntityItemPickupEvent event) {
-        if (achievements && event.item.getEntityItem()
+        if (Config.achievementsEnabled && event.item.getEntityItem()
             .getItem() == bacteriaBunch) event.entityPlayer.addStat(bacteriaAchievement, 1);
     }
 
     @SubscribeEvent
     public void onCrafting(ItemCraftedEvent event) { // SlotCrafting
-        if (achievements) {
+        if (Config.achievementsEnabled) {
             if (event.crafting.getItem() == Item.getItemFromBlock(must)) event.player.addStat(mustAchievement, 1);
             if (event.crafting.getItem() == Item.getItemFromBlock(bacteria))
                 event.player.addStat(bacteriumAchievement, 1);

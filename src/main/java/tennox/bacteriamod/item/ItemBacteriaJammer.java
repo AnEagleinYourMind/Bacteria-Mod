@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import tennox.bacteriamod.BacteriaMod;
+import tennox.bacteriamod.util.Config;
 
 public class ItemBacteriaJammer extends Item {
 
@@ -28,6 +29,8 @@ public class ItemBacteriaJammer extends Item {
                 BacteriaMod.jam_all = false;
                 ((EntityPlayer) entity).addChatMessage(new ChatComponentText("Jammed " + jammedBacteriaQuantity + " bacteria!"));
                 jammedBacteriaQuantity = 0L;
+
+                System.out.println(BacteriaMod.jamcolonies.size());
             }
         }
     }
@@ -35,9 +38,11 @@ public class ItemBacteriaJammer extends Item {
     @Override
     public ItemStack onItemRightClick(ItemStack item, World world, EntityPlayer player) {
         if (!world.isRemote) {
+            System.out.print("Before: ");
+            System.out.println(BacteriaMod.jamcolonies.size());
             BacteriaMod.jam_all = true;
             tick = 30;
-            if (BacteriaMod.achievements) player.addStat(BacteriaMod.jamAchievement, 1);
+            if (Config.achievementsEnabled) player.addStat(BacteriaMod.jamAchievement, 1);
             player.addChatMessage(new ChatComponentText("Jamming bacteria..."));
         }
         return item;

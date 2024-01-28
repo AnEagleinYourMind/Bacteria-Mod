@@ -2,21 +2,21 @@ package tennox.bacteriamod.util;
 
 import net.minecraft.block.Block;
 
-public class Food {
+public class TargetBlock {
 
     private final Block block;
     private final int meta;
 
-    public Food(Block block, int meta) {
+    public TargetBlock(Block block, int meta) {
         this.block = block;
         this.meta = meta;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Food)) return false;
-        Food f = (Food) o;
-        return block.equals(f.block) && meta == f.meta;
+    public boolean equals(Object target) {
+        if (!(target instanceof TargetBlock)) return false;
+
+        return block.equals(((TargetBlock) target).getBlock()) && meta == ((TargetBlock) target).getMeta();
     }
 
     @Override
