@@ -9,6 +9,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 import tennox.bacteriamod.BacteriaMod;
+import tennox.bacteriamod.util.CommonProxy;
 import tennox.bacteriamod.util.Config;
 
 public class ItemBacteriaJammer extends Item {
@@ -44,7 +45,7 @@ public class ItemBacteriaJammer extends Item {
             System.out.println(BacteriaMod.jamcolonies.size());
             BacteriaMod.jam_all = true;
             tick = 30;
-            if (Config.achievementsEnabled) player.addStat(BacteriaMod.jamAchievement, 1);
+            if (Config.achievementsEnabled) player.addStat(CommonProxy.jamAchievement, 1);
             player.addChatMessage(new ChatComponentText("Jamming bacteria..."));
         }
         return item;

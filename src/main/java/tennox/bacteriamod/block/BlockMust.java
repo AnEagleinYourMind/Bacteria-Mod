@@ -11,6 +11,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import tennox.bacteriamod.BacteriaMod;
+import tennox.bacteriamod.util.CommonProxy;
 
 public class BlockMust extends Block {
 
@@ -48,7 +49,7 @@ public class BlockMust extends Block {
     // Block
     @Override
     public Item getItemDropped(int i, Random random, int j) {
-        if (i >= GROW_TIME) return BacteriaMod.bacteriaBunch;
+        if (i >= GROW_TIME) return CommonProxy.bacteriaBunch;
         return Item.getItemFromBlock(this);
     }
 }

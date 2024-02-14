@@ -9,7 +9,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 
-import tennox.bacteriamod.BacteriaMod;
+import tennox.bacteriamod.util.CommonProxy;
 import tennox.bacteriamod.util.Config;
 import tennox.bacteriamod.util.TargetBlock;
 
@@ -28,12 +28,12 @@ public class EntityBacteriaPotion extends EntityPotion {
             TargetBlock wrappedBlock = new TargetBlock(block, meta);
 
             if (!Config.blacklist.contains(wrappedBlock)) {
-                worldObj.setBlock(pos.blockX, pos.blockY, pos.blockZ, BacteriaMod.bacteria, 0, 3);
+                worldObj.setBlock(pos.blockX, pos.blockY, pos.blockZ, CommonProxy.bacteria, 0, 3);
                 TileEntity t = worldObj.getTileEntity(pos.blockX, pos.blockY, pos.blockZ);
 
                 if (t instanceof TileEntityBacteria) {
                     TileEntityBacteria tile = (TileEntityBacteria) t;
-                    tile.addTargetBlock(wrappedBlock);
+                    tile.colony.addTargetBlock(wrappedBlock);
                     if (tile.shouldStartInstantly()) tile.startInstantly = true;
                 }
             }

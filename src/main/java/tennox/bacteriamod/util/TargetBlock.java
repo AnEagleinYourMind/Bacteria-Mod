@@ -6,10 +6,18 @@ public class TargetBlock {
 
     private final Block block;
     private final int meta;
+    private int hash; // cache the hash
 
     public TargetBlock(Block block, int meta) {
         this.block = block;
         this.meta = meta;
+
+        hash = Block.getIdFromBlock(block) * 24 + meta * 24;
+    }
+
+    @Override
+    public int hashCode() {
+        return hash;
     }
 
     @Override
