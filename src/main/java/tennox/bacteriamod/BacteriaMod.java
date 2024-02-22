@@ -3,8 +3,6 @@ package tennox.bacteriamod;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import net.minecraft.item.Item;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,12 +14,10 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import tennox.bacteriamod.util.ColonyWorldSavedData;
 import tennox.bacteriamod.util.CommonProxy;
-import tennox.bacteriamod.util.Config;
 
-@Mod(modid = "tennox_bacteria", name = "Bacteria", version = "2.3.3")
+@Mod(modid = BacteriaMod.MOD_ID, name = "Bacteria", version = "2.3.3")
 public class BacteriaMod {
 
     public static final String MOD_ID = "tennox_bacteria";
@@ -37,6 +33,7 @@ public class BacteriaMod {
     // However, this would need to be saved to disk somehow
 
     // TODO: add replacer blacklist
+    // TODO: fix achievements
 
     // TODO: when a new bacterium belonging to a colony is created, keep track of the number of bacteria in the colony
     // when the colony is saved to disk, check if the # of bacteria in the colony is zero
@@ -56,22 +53,6 @@ public class BacteriaMod {
     public void onServerLoad(WorldEvent.Load event) { // TODO: fix crash on world load
         if (!event.world.isRemote) {
             ColonyWorldSavedData.getOrCreate(event.world);
-        }
-    }
-
-    @SubscribeEvent
-    public void onPickup(EntityItemPickupEvent event) {
-        if (Config.achievementsEnabled && event.item.getEntityItem()
-            .getItem() == CommonProxy.bacteriaBunch) event.entityPlayer.addStat(CommonProxy.bacteriaAchievement, 1);
-    }
-
-    @SubscribeEvent
-    public void onCrafting(ItemCraftedEvent event) { // SlotCrafting
-        if (Config.achievementsEnabled) {
-            if (event.crafting.getItem() == Item.getItemFromBlock(CommonProxy.must))
-                event.player.addStat(CommonProxy.mustAchievement, 1);
-            if (event.crafting.getItem() == Item.getItemFromBlock(CommonProxy.bacteria))
-                event.player.addStat(CommonProxy.bacteriumAchievement, 1);
         }
     }
 

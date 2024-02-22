@@ -13,6 +13,7 @@ import net.minecraft.stats.AchievementList;
 import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.config.Configuration;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -23,6 +24,7 @@ import tennox.bacteriamod.block.BlockBacteriaReplace;
 import tennox.bacteriamod.block.BlockMust;
 import tennox.bacteriamod.entity.TileEntityBacteria;
 import tennox.bacteriamod.entity.TileEntityBacteriaReplacer;
+import tennox.bacteriamod.event.CommonEventListener;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
 import tennox.bacteriamod.item.ItemBacteriaPotion;
 import tennox.bacteriamod.world.BacteriaWorldGenerator;
@@ -59,6 +61,9 @@ public class CommonProxy {
     }
 
     public void init(FMLInitializationEvent event) {
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new CommonEventListener());
         // parse config after PreInitialization when all blocks should be loaded
         if (!Config.unparsedBlacklist.isEmpty()) {
             for (String s : Config.unparsedBlacklist.split(",")) {
@@ -154,7 +159,7 @@ public class CommonProxy {
             .addShapelessRecipe(new ItemStack(bacteriaPotion, 1), Items.potionitem, Items.nether_wart, bacteriaBunch);
 
         if (Config.achievementsEnabled) {
-            AchievementPage achievementPage = new AchievementPage(BacteriaMod.MOD_ID);
+            AchievementPage achievementPage = new AchievementPage("Bacteria Mod");
             AchievementPage.registerAchievementPage(achievementPage);
             List<Achievement> achievementsList = achievementPage.getAchievements();
 

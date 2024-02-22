@@ -1,6 +1,7 @@
 package tennox.bacteriamod.entity;
 
-import java.util.*;
+import java.util.Random;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -9,7 +10,11 @@ import net.minecraft.tileentity.TileEntity;
 
 import tennox.bacteriamod.BacteriaMod;
 import tennox.bacteriamod.item.ItemBacteriaJammer;
-import tennox.bacteriamod.util.*;
+import tennox.bacteriamod.util.Colony;
+import tennox.bacteriamod.util.ColonyWorldSavedData;
+import tennox.bacteriamod.util.CommonProxy;
+import tennox.bacteriamod.util.Config;
+import tennox.bacteriamod.util.TargetBlock;
 
 public class TileEntityBacteria extends TileEntity {
 
